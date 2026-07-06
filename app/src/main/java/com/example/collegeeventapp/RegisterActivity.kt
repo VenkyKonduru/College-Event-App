@@ -39,26 +39,26 @@ class RegisterActivity : AppCompatActivity() {
         val btnRegister = findViewById<Button>(R.id.btnRegister)
 
         btnRegister.setOnClickListener {
-            val email = etEmail.text.toString()
-            val name = etName.text.toString()
-            val password = etPassword.text.toString()
-            val confirmPassword = etConfirmPassword.text.toString()
+            val email = etEmail.text.toString().trim()
+            val name = etName.text.toString().trim()
+            val password = etPassword.text.toString().trim()
+            val confirmPassword = etConfirmPassword.text.toString().trim()
             val selectedRole = rgRole.checkedRadioButtonId
 
 
-            if (email.isBlank()) {
+            if (email.isEmpty()) {
                 Toast.makeText(this, "Please enter Email", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            if (name.isBlank()) {
+            if (name.isEmpty()) {
                 Toast.makeText(this, "Please enter Name", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            if (password.isBlank()) {
+            if (password.isEmpty()) {
                 Toast.makeText(this, "Please enter Password", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            if (confirmPassword.isBlank()) {
+            if (confirmPassword.isEmpty()) {
                 Toast.makeText(this, "Please Confirm your Password", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
