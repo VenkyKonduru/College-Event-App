@@ -14,9 +14,18 @@
         android:layout_marginTop="432dp"
         android:text="AdminDashboard"
 
+
         android:textSize="40sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnAddEvent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="Add Event"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

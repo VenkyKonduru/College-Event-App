@@ -82,10 +82,10 @@ class RegisterActivity : AppCompatActivity() {
                     if (task.isSuccessful) {
 
                         val uid = auth.currentUser!!.uid
-                        val user = hashMapOf(
-                            "name" to name,
-                            "email" to email,
-                            "role" to role
+                        val user = User(
+                            name,
+                            email,
+                            role
                         )
                         db.collection("users")
                             .document(uid)
