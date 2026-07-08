@@ -3,11 +3,18 @@ package com.example.collegeeventapp
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class EventAdapter(private val eventList: ArrayList<Event>) :
-    RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
+class EventAdapter(
+    private val eventList: ArrayList<Event>,
+    private val listener: OnRegisterClickListener
+) : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
+
+    interface OnRegisterClickListener {
+        fun onRegister(event: Event)
+    }
 
     class EventViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -15,6 +22,7 @@ class EventAdapter(private val eventList: ArrayList<Event>) :
         val description: TextView = itemView.findViewById(R.id.tvDescription)
         val date: TextView = itemView.findViewById(R.id.tvDate)
         val venue: TextView = itemView.findViewById(R.id.tvVenue)
+        val btnRegister: Button = itemView.findViewById(R.id.btnRegister)
 
     }
 
@@ -34,6 +42,22 @@ class EventAdapter(private val eventList: ArrayList<Event>) :
         holder.description.text = currentEvent.description
         holder.date.text = currentEvent.date
         holder.venue.text = currentEvent.venue
+
+        if (currentEvent.isRegistered) {
+
+            holder.btnRegister.text = "Registered"
+            holder.btnRegister.isEnabled = false
+
+        } else {
+
+            holder.btnRegister.text = "Register"
+            holder.btnRegister.isEnabled = true
+
+            holder.btnRegister.setOnClickListener {
+                listener.onRegister(currentEvent)
+            }
+
+        }
 
     }
 
