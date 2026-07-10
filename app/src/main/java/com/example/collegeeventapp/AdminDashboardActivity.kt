@@ -2,27 +2,27 @@ package com.example.collegeeventapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import android.widget.TextView
 import com.google.firebase.firestore.FirebaseFirestore
+class AdminDashboardActivity : AppCompatActivity() {
 
-class AdminDashboardActivity : AppCompatActivity(),
-    AdminEventAdapter.OnEventActionListener {
 
-    private lateinit var adapter: AdminEventAdapter
-    private lateinit var recyclerView: RecyclerView
-    private val db = FirebaseFirestore.getInstance()
-    private lateinit var noEventAdded: TextView
-    private val eventList = ArrayList<Event>()
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
+    private lateinit var toolbar: MaterialToolbar
+
+
+    private val auth = FirebaseAuth.getInstance()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -30,19 +30,87 @@ class AdminDashboardActivity : AppCompatActivity(),
         enableEdgeToEdge()
         setContentView(R.layout.activity_admin_dashboard)
 
-        val btnAddEvent = findViewById<Button>(R.id.btnAddEvent)
-        recyclerView = findViewById(R.id.rvEvents)
-        noEventAdded = findViewById(R.id.noEventAdded)
+        drawerLayout = findViewById(R.id.drawerLayout)
+        navigationView = findViewById(R.id.navigationView)
+        val headerView = navigationView.getHeaderView(0)
 
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        val tvUserName = headerView.findViewById<TextView>(R.id.tvUserName)
+        val tvUserEmail = headerView.findViewById<TextView>(R.id.tvUserEmail)
 
-        adapter = AdminEventAdapter(eventList, this)
-        recyclerView.adapter = adapter
+        val user = FirebaseAuth.getInstance().currentUser
 
-        loadEvents()
+        if (user != null) {
 
-        btnAddEvent.setOnClickListener {
-            startActivity(Intent(this, AddEventActivity::class.java))
+            tvUserEmail.text = user.email
+
+            FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(user.uid)
+                .get()
+                .addOnSuccessListener { document ->
+
+                    tvUserName.text = document.getString("name") ?: "Admin"
+
+                }
+
+        }
+
+
+        toolbar = findViewById(R.id.toolbar)
+
+        setSupportActionBar(toolbar)
+
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.open,
+            R.string.close
+        )
+
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        // Load Dashboard Fragment by default
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, DashboardFragment())
+                .commit()
+        }
+
+        navigationView.setNavigationItemSelectedListener {
+
+            when (it.itemId) {
+
+                R.id.nav_dashboard -> {
+
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainer, DashboardFragment())
+                        .commit()
+
+                }
+
+                R.id.nav_add_event -> {
+
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragmentContainer, AddEventFragment())
+                        .addToBackStack(null)
+                        .commit()
+
+                }
+
+                R.id.nav_logout -> {
+
+                    auth.signOut()
+
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+
+                }
+            }
+
+            drawerLayout.closeDrawers()
+            true
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -57,108 +125,6 @@ class AdminDashboardActivity : AppCompatActivity(),
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadEvents()
-    }
 
-    private fun loadEvents() {
-
-        db.collection("events")
-            .get()
-            .addOnSuccessListener { documents ->
-
-                eventList.clear()
-
-                for (document in documents) {
-
-                    val event = document.toObject(Event::class.java)
-                    event.id = document.id
-                    eventList.add(event)
-
-                }
-
-                adapter.notifyDataSetChanged()
-                updateUI()
-
-            }
-            .addOnFailureListener {
-
-                Toast.makeText(this, "Failed to load events", Toast.LENGTH_SHORT).show()
-                updateUI()
-
-            }
-
-    }
-
-    private fun updateUI() {
-
-        if (eventList.isEmpty()) {
-
-            noEventAdded.visibility = View.VISIBLE
-            recyclerView.visibility = View.GONE
-
-        } else {
-
-            noEventAdded.visibility = View.GONE
-            recyclerView.visibility = View.VISIBLE
-
-        }
-
-    }
-
-    override fun onEdit(event: Event) {
-
-        val intent = Intent(this, AddEventActivity::class.java)
-
-        intent.putExtra("isEdit", true)
-        intent.putExtra("eventId", event.id)
-        intent.putExtra("title", event.title)
-        intent.putExtra("description", event.description)
-        intent.putExtra("date", event.date)
-        intent.putExtra("venue", event.venue)
-
-        startActivity(intent)
-
-    }
-
-    override fun onDelete(event: Event) {
-
-
-
-        AlertDialog.Builder(this)
-            .setTitle("Delete Event")
-            .setMessage("Are you sure you want to delete this event?")
-            .setPositiveButton("Delete") { _, _ ->
-
-                db.collection("events")
-                    .document(event.id)
-                    .delete()
-                    .addOnSuccessListener {
-
-                        Toast.makeText(
-                            this,
-                            "Event deleted successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        loadEvents()
-
-                    }
-                    .addOnFailureListener {
-
-                        Toast.makeText(
-                            this,
-                            "Failed to delete event",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                    }
-
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-
-    }
 
 }

@@ -8,10 +8,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class EventAdapter(
-    private val eventList: ArrayList<Event>,
-    private val listener: OnRegisterClickListener
+private val eventList: ArrayList<Event>,
+private val listener: OnRegisterClickListener,
+private val showRegisterButton: Boolean = true
 ) : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
-
     interface OnRegisterClickListener {
         fun onRegister(event: Event)
     }
@@ -43,20 +43,28 @@ class EventAdapter(
         holder.date.text = currentEvent.date
         holder.venue.text = currentEvent.venue
 
-        if (currentEvent.isRegistered) {
+        if (!showRegisterButton) {
 
-            holder.btnRegister.text = "Registered"
-            holder.btnRegister.isEnabled = false
+            holder.btnRegister.visibility = View.GONE
 
         } else {
 
-            holder.btnRegister.text = "Register"
-            holder.btnRegister.isEnabled = true
+            holder.btnRegister.visibility = View.VISIBLE
 
-            holder.btnRegister.setOnClickListener {
-                listener.onRegister(currentEvent)
+            if (currentEvent.isRegistered) {
+
+                holder.btnRegister.text = "Registered"
+                holder.btnRegister.isEnabled = false
+
+            } else {
+
+                holder.btnRegister.text = "Register"
+                holder.btnRegister.isEnabled = true
+
+                holder.btnRegister.setOnClickListener {
+                    listener.onRegister(currentEvent)
+                }
             }
-
         }
 
     }

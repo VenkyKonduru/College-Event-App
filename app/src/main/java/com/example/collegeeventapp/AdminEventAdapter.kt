@@ -3,8 +3,7 @@ package com.example.collegeeventapp
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.PopupMenu
+import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
@@ -16,6 +15,7 @@ class AdminEventAdapter(
     interface OnEventActionListener {
         fun onEdit(event: Event)
         fun onDelete(event: Event)
+        fun onRegistrations(event: Event)
     }
 
     class EventViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -24,8 +24,11 @@ class AdminEventAdapter(
         val description: TextView = itemView.findViewById(R.id.tvDescription)
         val date: TextView = itemView.findViewById(R.id.tvDate)
         val venue: TextView = itemView.findViewById(R.id.tvVenue)
-        val ibMenue: ImageButton = itemView.findViewById(R.id.ibMenu)
 
+        val btnEdit: Button = itemView.findViewById(R.id.btnEdit)
+        val btnDelete: Button = itemView.findViewById(R.id.btnDelete)
+        val btnRegistrations: Button =
+            itemView.findViewById(R.id.btnRegistrations)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
@@ -42,46 +45,23 @@ class AdminEventAdapter(
 
         holder.title.text = currentEvent.title
         holder.description.text = currentEvent.description
-        holder.date.text = currentEvent.date
-        holder.venue.text = currentEvent.venue
+        holder.date.text = "📅 Date : ${currentEvent.date}"
+        holder.venue.text = "📍 Venue : ${currentEvent.venue}"
 
-        holder.ibMenue.setOnClickListener {
-
-            val popupMenu = PopupMenu(holder.itemView.context, holder.ibMenue)
-
-            popupMenu.menuInflater.inflate(
-                R.menu.admin_event_menu,
-                popupMenu.menu
-            )
-
-            popupMenu.setOnMenuItemClickListener {
-
-                when (it.itemId) {
-
-                    R.id.menuEdit -> {
-                        listener.onEdit(currentEvent)
-                        true
-                    }
-
-                    R.id.menuDelete -> {
-                        listener.onDelete(currentEvent)
-                        true
-                    }
-
-                    else -> false
-                }
-            }
-
-            popupMenu.show()
-
+        holder.btnEdit.setOnClickListener {
+            listener.onEdit(currentEvent)
         }
 
+        holder.btnDelete.setOnClickListener {
+            listener.onDelete(currentEvent)
+        }
+
+        holder.btnRegistrations.setOnClickListener {
+            listener.onRegistrations(currentEvent)
+        }
     }
 
     override fun getItemCount(): Int {
-
         return eventList.size
-
     }
-
 }
