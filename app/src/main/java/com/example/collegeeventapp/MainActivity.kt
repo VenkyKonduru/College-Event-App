@@ -11,24 +11,45 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-
+import android.content.SharedPreferences
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        auth = FirebaseAuth.getInstance()
-        db = FirebaseFirestore.getInstance()
-
         val btnLogin = findViewById<Button>(R.id.btnLogin)
         val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
+
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
+        sharedPreferences = getSharedPreferences("CollegeEventPrefs", MODE_PRIVATE)
+
+        if (sharedPreferences.getBoolean("isLoggedIn", false)) {
+
+            val role = sharedPreferences.getString("userRole", "")
+
+            if (role == "Admin") {
+                startActivity(Intent(this, AdminDashboardActivity::class.java))
+                finish()
+                return
+            }
+
+            if (role == "Student") {
+                startActivity(Intent(this, StudentDashboardActivity::class.java))
+                finish()
+                return
+            }
+        }
+
+
 
         btnLogin.setOnClickListener {
 
@@ -64,11 +85,23 @@ class MainActivity : AppCompatActivity() {
                                 val role = document.getString("role")
 
                                 if(role == "Admin"){
-                                    startActivity(Intent(this,AdminDashboardActivity::class.java))
+
+                                    sharedPreferences.edit()
+                                        .putBoolean("isLoggedIn", true)
+                                        .putString("userRole", "Admin")
+                                        .apply()
+
+                                    startActivity(Intent(this, AdminDashboardActivity::class.java))
                                     finish()
                                 }
                                 else if(role == "Student"){
-                                    startActivity(Intent(this,StudentDashboardActivity::class.java))
+
+                                    sharedPreferences.edit()
+                                        .putBoolean("isLoggedIn", true)
+                                        .putString("userRole", "Student")
+                                        .apply()
+
+                                    startActivity(Intent(this, StudentDashboardActivity::class.java))
                                     finish()
                                 }
                                 else{

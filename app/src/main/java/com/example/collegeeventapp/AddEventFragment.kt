@@ -14,10 +14,10 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Calendar
 
+
 class AddEventFragment : Fragment() {
 
     private lateinit var db: FirebaseFirestore
-
     private var isEdit = false
     private var eventId = ""
 
@@ -30,6 +30,9 @@ class AddEventFragment : Fragment() {
     private lateinit var etVenue: TextInputEditText
 
     private lateinit var btnAddEvent: MaterialButton
+
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,6 +57,7 @@ class AddEventFragment : Fragment() {
         etDate.keyListener = null
         etVenue = view.findViewById(R.id.etVenue)
         btnAddEvent = view.findViewById(R.id.btnAddEvent)
+
 
         toolbar.setNavigationOnClickListener {
             parentFragmentManager.popBackStack()
@@ -106,6 +110,7 @@ class AddEventFragment : Fragment() {
             datePicker.show()
         }
 
+
         btnAddEvent.setOnClickListener {
             saveEvent()
         }
@@ -140,11 +145,30 @@ class AddEventFragment : Fragment() {
             return
         }
 
+
+        saveEventToFirestore(
+            title,
+            description,
+            date,
+            venue,
+            ""
+        )
+    }
+
+    private fun saveEventToFirestore(
+        title: String,
+        description: String,
+        date: String,
+        venue: String,
+        imageUrl: String
+    ) {
+
         val event = Event(
             title = title,
             description = description,
             date = date,
-            venue = venue
+            venue = venue,
+            imageUrl = imageUrl
         )
 
         if (isEdit) {
@@ -190,6 +214,8 @@ class AddEventFragment : Fragment() {
                     etDate.text?.clear()
                     etVenue.text?.clear()
 
+
+
                     etTitle.requestFocus()
 
                 }
@@ -205,4 +231,6 @@ class AddEventFragment : Fragment() {
 
         }
     }
+
+
 }

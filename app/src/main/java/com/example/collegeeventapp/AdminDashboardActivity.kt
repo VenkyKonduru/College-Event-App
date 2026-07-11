@@ -13,6 +13,7 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import android.widget.TextView
 import com.google.firebase.firestore.FirebaseFirestore
+import android.content.Context
 class AdminDashboardActivity : AppCompatActivity() {
 
 
@@ -71,7 +72,7 @@ class AdminDashboardActivity : AppCompatActivity() {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        // Load Dashboard Fragment by default
+
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, DashboardFragment())
@@ -102,6 +103,11 @@ class AdminDashboardActivity : AppCompatActivity() {
                 R.id.nav_logout -> {
 
                     auth.signOut()
+
+                    val sharedPreferences =
+                        getSharedPreferences("CollegeEventPrefs", Context.MODE_PRIVATE)
+
+                    sharedPreferences.edit().clear().apply()
 
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()

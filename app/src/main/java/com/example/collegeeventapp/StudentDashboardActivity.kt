@@ -1,16 +1,17 @@
 package com.example.collegeeventapp
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.card.MaterialCardView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
-import android.widget.TextView
 import com.google.firebase.firestore.FirebaseFirestore
 
 class StudentDashboardActivity : AppCompatActivity() {
@@ -19,8 +20,7 @@ class StudentDashboardActivity : AppCompatActivity() {
     private lateinit var navigationView: NavigationView
     private lateinit var toolbar: MaterialToolbar
 
-    private lateinit var cardAllEvents: MaterialCardView
-    private lateinit var cardMyEvents: MaterialCardView
+
 
     private val auth = FirebaseAuth.getInstance()
 
@@ -47,7 +47,7 @@ class StudentDashboardActivity : AppCompatActivity() {
                 .get()
                 .addOnSuccessListener { document ->
 
-                    tvUserName.text = document.getString("name") ?: "Atudent"
+                    tvUserName.text = document.getString("name") ?: "Student"
 
                 }
 
@@ -56,11 +56,31 @@ class StudentDashboardActivity : AppCompatActivity() {
 
         toolbar = findViewById(R.id.toolbar)
 
-        cardAllEvents = findViewById(R.id.cardAllEvents)
-        cardMyEvents = findViewById(R.id.cardMyEvents)
+
 
         setSupportActionBar(toolbar)
         supportActionBar?.title = "Student Dashboard"
+
+        toolbar.inflateMenu(R.menu.student_toolbar_menu)
+
+        toolbar.setOnMenuItemClickListener {
+
+            when (it.itemId) {
+
+                R.id.action_search -> {
+
+                    Toast.makeText(
+                        this,
+                        "Search clicked",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    true
+                }
+
+                else -> false
+            }
+        }
 
         val toggle = ActionBarDrawerToggle(
             this,
@@ -75,40 +95,41 @@ class StudentDashboardActivity : AppCompatActivity() {
 
         // Default Fragment
         if (savedInstanceState == null) {
-            replaceFragment(AllEventsFragment())
-            navigationView.setCheckedItem(R.id.nav_all_events)
+            replaceFragment(StudentHomeFragment())
+            navigationView.setCheckedItem(R.id.nav_dashboard)
         }
 
-        // Card Clicks
-        cardAllEvents.setOnClickListener {
-            replaceFragment(AllEventsFragment())
-            navigationView.setCheckedItem(R.id.nav_all_events)
-        }
 
-        cardMyEvents.setOnClickListener {
-            replaceFragment(MyEventsFragment())
-            navigationView.setCheckedItem(R.id.nav_my_events)
-        }
 
         // Drawer Clicks
         navigationView.setNavigationItemSelectedListener { menuItem ->
 
             when (menuItem.itemId) {
 
+                R.id.nav_dashboard -> {
+                    supportActionBar?.title = "Dashboard"
+                    replaceFragment(StudentHomeFragment())
+                }
+
                 R.id.nav_all_events -> {
+                    supportActionBar?.title = "All Events"
                     replaceFragment(AllEventsFragment())
                 }
 
                 R.id.nav_my_events -> {
+                    supportActionBar?.title = "My Events"
                     replaceFragment(MyEventsFragment())
                 }
 
                 R.id.nav_logout -> {
                     auth.signOut()
 
-                    startActivity(
-                        Intent(this, MainActivity::class.java)
-                    )
+                    val sharedPreferences =
+                        getSharedPreferences("CollegeEventPrefs", Context.MODE_PRIVATE)
+
+                    sharedPreferences.edit().clear().apply()
+
+                    startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 }
             }
