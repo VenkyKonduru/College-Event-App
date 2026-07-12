@@ -6,9 +6,14 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import android.widget.ImageView
+import com.bumptech.glide.Glide
+import java.text.SimpleDateFormat
+import java.util.Locale
+
 
 class EventAdapter(
-private val eventList: ArrayList<Event>,
+    private val eventList: MutableList<Event>,
 private val listener: OnRegisterClickListener,
 private val showRegisterButton: Boolean = true
 ) : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
@@ -22,6 +27,7 @@ private val showRegisterButton: Boolean = true
         val description: TextView = itemView.findViewById(R.id.tvDescription)
         val date: TextView = itemView.findViewById(R.id.tvDate)
         val venue: TextView = itemView.findViewById(R.id.tvVenue)
+        val eventImage: ImageView = itemView.findViewById(R.id.ivEventImage)
         val btnRegister: Button = itemView.findViewById(R.id.btnRegister)
 
     }
@@ -40,8 +46,23 @@ private val showRegisterButton: Boolean = true
 
         holder.title.text = currentEvent.title
         holder.description.text = currentEvent.description
-        holder.date.text = currentEvent.date
         holder.venue.text = currentEvent.venue
+
+        // Format Date for Chip (e.g., 26-08-2026 -> 26 Aug)
+        try {
+            val inputFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("dd MMM", Locale.getDefault())
+            val date = inputFormat.parse(currentEvent.date)
+            holder.date.text = outputFormat.format(date!!)
+        } catch (e: Exception) {
+            holder.date.text = currentEvent.date
+        }
+
+        Glide.with(holder.itemView.context)
+            .load(currentEvent.imageUrl)
+            .placeholder(R.drawable.ic_image_placeholder)
+            .error(R.drawable.ic_image_placeholder)
+            .into(holder.eventImage)
 
         if (!showRegisterButton) {
 
@@ -74,4 +95,6 @@ private val showRegisterButton: Boolean = true
         return eventList.size
 
     }
+
+
 }

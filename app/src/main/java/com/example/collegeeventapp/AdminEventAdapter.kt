@@ -6,6 +6,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import android.widget.ImageView
+import com.bumptech.glide.Glide
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class AdminEventAdapter(
     private val eventList: ArrayList<Event>,
@@ -24,7 +28,7 @@ class AdminEventAdapter(
         val description: TextView = itemView.findViewById(R.id.tvDescription)
         val date: TextView = itemView.findViewById(R.id.tvDate)
         val venue: TextView = itemView.findViewById(R.id.tvVenue)
-
+        val eventImage: ImageView = itemView.findViewById(R.id.ivEventImage)
         val btnEdit: Button = itemView.findViewById(R.id.btnEdit)
         val btnDelete: Button = itemView.findViewById(R.id.btnDelete)
         val btnRegistrations: Button =
@@ -45,8 +49,23 @@ class AdminEventAdapter(
 
         holder.title.text = currentEvent.title
         holder.description.text = currentEvent.description
-        holder.date.text = "📅 Date : ${currentEvent.date}"
-        holder.venue.text = "📍 Venue : ${currentEvent.venue}"
+        holder.venue.text = currentEvent.venue
+
+        // Format Date for Chip
+        try {
+            val inputFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("dd MMM", Locale.getDefault())
+            val date = inputFormat.parse(currentEvent.date)
+            holder.date.text = outputFormat.format(date!!)
+        } catch (e: Exception) {
+            holder.date.text = currentEvent.date
+        }
+
+        Glide.with(holder.itemView.context)
+            .load(currentEvent.imageUrl)
+            .placeholder(R.drawable.ic_image_placeholder)
+            .error(R.drawable.ic_image_placeholder)
+            .into(holder.eventImage)
 
         holder.btnEdit.setOnClickListener {
             listener.onEdit(currentEvent)

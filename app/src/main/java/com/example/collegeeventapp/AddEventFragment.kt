@@ -21,13 +21,14 @@ class AddEventFragment : Fragment() {
     private var isEdit = false
     private var eventId = ""
 
-    private lateinit var toolbar: MaterialToolbar
+    private lateinit var tvTitle: TextView
     private lateinit var tvSubtitle: TextView
 
     private lateinit var etTitle: TextInputEditText
     private lateinit var etDescription: TextInputEditText
     private lateinit var etDate: TextInputEditText
     private lateinit var etVenue: TextInputEditText
+    private lateinit var etImageUrl: TextInputEditText
 
     private lateinit var btnAddEvent: MaterialButton
 
@@ -48,7 +49,7 @@ class AddEventFragment : Fragment() {
 
         db = FirebaseFirestore.getInstance()
 
-        toolbar = view.findViewById(R.id.toolbarAddEvent)
+        tvTitle = view.findViewById(R.id.tvTitle)
         tvSubtitle = view.findViewById(R.id.tvSubtitle)
 
         etTitle = view.findViewById(R.id.etTitle)
@@ -56,12 +57,8 @@ class AddEventFragment : Fragment() {
         etDate = view.findViewById(R.id.etDate)
         etDate.keyListener = null
         etVenue = view.findViewById(R.id.etVenue)
+        etImageUrl = view.findViewById(R.id.etImageUrl)
         btnAddEvent = view.findViewById(R.id.btnAddEvent)
-
-
-        toolbar.setNavigationOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
 
         isEdit = arguments?.getBoolean("isEdit", false) ?: false
 
@@ -73,13 +70,14 @@ class AddEventFragment : Fragment() {
             etDescription.setText(arguments?.getString("description"))
             etDate.setText(arguments?.getString("date"))
             etVenue.setText(arguments?.getString("venue"))
+            etImageUrl.setText(arguments?.getString("imageUrl"))
 
-            toolbar.title = "Edit Event"
+            tvTitle.text = "Edit Event"
             tvSubtitle.text = "Modify the event information"
             btnAddEvent.text = "UPDATE EVENT"
         } else {
 
-            toolbar.title = "Add New Event"
+            tvTitle.text = "Add New Event"
             tvSubtitle.text = "Fill in the event details below"
             btnAddEvent.text = "ADD EVENT"
         }
@@ -124,6 +122,7 @@ class AddEventFragment : Fragment() {
         val description = etDescription.text.toString().trim()
         val date = etDate.text.toString().trim()
         val venue = etVenue.text.toString().trim()
+        val imageUrl = etImageUrl.text.toString().trim()
 
         if (title.isEmpty()) {
             etTitle.error = "Required"
@@ -145,13 +144,18 @@ class AddEventFragment : Fragment() {
             return
         }
 
+        if (imageUrl.isEmpty()) {
+            etImageUrl.error = "Required"
+            return
+        }
+
 
         saveEventToFirestore(
             title,
             description,
             date,
             venue,
-            ""
+            imageUrl
         )
     }
 
@@ -209,12 +213,17 @@ class AddEventFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
 
+                    NotificationHelper.showNotification(
+                        requireContext(),
+                        "🎉 New College Event",
+                        "$title has been added. Register now!"
+                    )
+
                     etTitle.text?.clear()
                     etDescription.text?.clear()
                     etDate.text?.clear()
                     etVenue.text?.clear()
-
-
+                    etImageUrl.text?.clear()
 
                     etTitle.requestFocus()
 

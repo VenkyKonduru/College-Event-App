@@ -41,6 +41,10 @@ class DashboardFragment : Fragment(),
 
         recyclerView.adapter = adapter
 
+        view.findViewById<View>(R.id.fabAddEvent).setOnClickListener {
+            onAddEvent()
+        }
+
         loadEvents()
 
         return view
@@ -113,6 +117,8 @@ class DashboardFragment : Fragment(),
 
         fragment.arguments = bundle
 
+        (requireActivity() as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = "Edit Event"
+
         requireActivity()
             .supportFragmentManager
             .beginTransaction()
@@ -169,6 +175,8 @@ class DashboardFragment : Fragment(),
 
         fragment.arguments = bundle
 
+        (requireActivity() as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = "Student Registrations"
+
         requireActivity()
             .supportFragmentManager
             .beginTransaction()
@@ -176,6 +184,16 @@ class DashboardFragment : Fragment(),
             .addToBackStack(null)
             .commit()
 
+    }
+
+    private fun onAddEvent() {
+        (requireActivity() as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.title = "Add Event"
+        requireActivity()
+            .supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragmentContainer, AddEventFragment())
+            .addToBackStack(null)
+            .commit()
     }
 
 }

@@ -14,6 +14,9 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
+import androidx.appcompat.app.AppCompatDelegate
+import android.content.SharedPreferences
+
 class StudentDashboardActivity : AppCompatActivity() {
 
     private lateinit var drawerLayout: DrawerLayout
@@ -59,28 +62,7 @@ class StudentDashboardActivity : AppCompatActivity() {
 
 
         setSupportActionBar(toolbar)
-        supportActionBar?.title = "Student Dashboard"
-
-        toolbar.inflateMenu(R.menu.student_toolbar_menu)
-
-        toolbar.setOnMenuItemClickListener {
-
-            when (it.itemId) {
-
-                R.id.action_search -> {
-
-                    Toast.makeText(
-                        this,
-                        "Search clicked",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    true
-                }
-
-                else -> false
-            }
-        }
+        supportActionBar?.setDisplayShowTitleEnabled(true)
 
         val toggle = ActionBarDrawerToggle(
             this,
@@ -95,6 +77,7 @@ class StudentDashboardActivity : AppCompatActivity() {
 
         // Default Fragment
         if (savedInstanceState == null) {
+            supportActionBar?.title = "Home"
             replaceFragment(StudentHomeFragment())
             navigationView.setCheckedItem(R.id.nav_dashboard)
         }
@@ -107,7 +90,7 @@ class StudentDashboardActivity : AppCompatActivity() {
             when (menuItem.itemId) {
 
                 R.id.nav_dashboard -> {
-                    supportActionBar?.title = "Dashboard"
+                    supportActionBar?.title = "Home"
                     replaceFragment(StudentHomeFragment())
                 }
 
@@ -119,6 +102,10 @@ class StudentDashboardActivity : AppCompatActivity() {
                 R.id.nav_my_events -> {
                     supportActionBar?.title = "My Events"
                     replaceFragment(MyEventsFragment())
+                }
+
+                R.id.nav_theme -> {
+                    toggleDarkMode()
                 }
 
                 R.id.nav_logout -> {
@@ -143,5 +130,18 @@ class StudentDashboardActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit()
+    }
+
+    private fun toggleDarkMode() {
+        val sharedPrefs = getSharedPreferences("CollegeEventPrefs", Context.MODE_PRIVATE)
+        val isDarkMode = sharedPrefs.getBoolean("isDarkMode", false)
+        
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            sharedPrefs.edit().putBoolean("isDarkMode", false).apply()
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            sharedPrefs.edit().putBoolean("isDarkMode", true).apply()
+        }
     }
 }

@@ -11,15 +11,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-
+import androidx.appcompat.widget.SearchView
 class AllEventsFragment : Fragment(),
     EventAdapter.OnRegisterClickListener {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: EventAdapter
     private lateinit var tvNoEvents: TextView
+    private lateinit var searchView: SearchView
 
-    private val eventList = ArrayList<Event>()
+    private val allEvents = ArrayList<Event>()
+    private val filteredList = ArrayList<Event>()
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
@@ -36,12 +38,27 @@ class AllEventsFragment : Fragment(),
         )
 
         tvNoEvents = view.findViewById(R.id.tvNoEvents)
+        searchView = view.findViewById(R.id.searchView)
         recyclerView = view.findViewById(R.id.recyclerView)
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        adapter = EventAdapter(eventList, this)
+        adapter = EventAdapter(filteredList, this)
         recyclerView.adapter = adapter
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                filterEvents(query ?: "")
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterEvents(newText ?: "")
+                return true
+            }
+
+        })
 
         return view
     }
@@ -52,8 +69,8 @@ class AllEventsFragment : Fragment(),
     }
 
     private fun loadEvents() {
-        eventList.clear()
-
+        allEvents.clear()
+        filteredList.clear()
         val student = auth.currentUser
 
         db.collection("events")
@@ -61,7 +78,10 @@ class AllEventsFragment : Fragment(),
             .addOnSuccessListener { documents ->
 
                 if (documents.isEmpty) {
+
+                    filteredList.clear()
                     adapter.notifyDataSetChanged()
+
                     updateUI()
                     return@addOnSuccessListener
                 }
@@ -84,24 +104,32 @@ class AllEventsFragment : Fragment(),
 
                                 event.isRegistered = registrationDocument.exists()
 
-                                eventList.add(event)
+                                allEvents.add(event)
 
                                 processedEvents++
 
                                 if (processedEvents == documents.size()) {
+
+                                    filteredList.clear()
+                                    filteredList.addAll(allEvents)
                                     adapter.notifyDataSetChanged()
                                     updateUI()
+
+
                                 }
 
                             }
 
                     } else {
 
-                        eventList.add(event)
+                        allEvents.add(event)
 
                         processedEvents++
 
                         if (processedEvents == documents.size()) {
+
+                            filteredList.clear()
+                            filteredList.addAll(allEvents)
                             adapter.notifyDataSetChanged()
                             updateUI()
                         }
@@ -126,7 +154,8 @@ class AllEventsFragment : Fragment(),
     }
 
     private fun updateUI() {
-        if (eventList.isEmpty()) {
+
+        if (filteredList.isEmpty()) {
 
             tvNoEvents.visibility = View.VISIBLE
             recyclerView.visibility = View.GONE
@@ -140,10 +169,21 @@ class AllEventsFragment : Fragment(),
     }
 
     override fun onRegister(event: Event) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Confirm Registration")
+            .setMessage("Do you want to register for \"${event.title}\"?")
+            .setPositiveButton("Register") { _, _ ->
+                performRegistration(event)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun performRegistration(event: Event) {
         val student = auth.currentUser
 
         if (student == null) {
-            Toast.makeText( requireContext(), "Please login again", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Please login again", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -220,5 +260,33 @@ class AllEventsFragment : Fragment(),
                 ).show()
 
             }
+    }
+
+    private fun filterEvents(query: String) {
+
+        filteredList.clear()
+
+        if (query.isEmpty()) {
+
+            filteredList.addAll(allEvents)
+        } else {
+
+            val search = query.lowercase()
+
+            for (event in allEvents) {
+
+                if (
+                    event.title.lowercase().contains(search) ||
+                    event.description.lowercase().contains(search) ||
+                    event.venue.lowercase().contains(search) ||
+                    event.date.lowercase().contains(search)
+                ) {
+                    filteredList.add(event)
+                }
+            }
+        }
+
+        adapter.notifyDataSetChanged()
+        updateUI()
     }
 }

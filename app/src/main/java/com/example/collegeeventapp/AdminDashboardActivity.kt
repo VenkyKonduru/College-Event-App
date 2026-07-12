@@ -14,6 +14,9 @@ import com.google.firebase.auth.FirebaseAuth
 import android.widget.TextView
 import com.google.firebase.firestore.FirebaseFirestore
 import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
+import android.content.SharedPreferences
+
 class AdminDashboardActivity : AppCompatActivity() {
 
 
@@ -60,6 +63,7 @@ class AdminDashboardActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.toolbar)
 
         setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(true)
 
         val toggle = ActionBarDrawerToggle(
             this,
@@ -74,6 +78,7 @@ class AdminDashboardActivity : AppCompatActivity() {
 
 
         if (savedInstanceState == null) {
+            supportActionBar?.title = "Manage Events"
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, DashboardFragment())
                 .commit()
@@ -84,7 +89,7 @@ class AdminDashboardActivity : AppCompatActivity() {
             when (it.itemId) {
 
                 R.id.nav_dashboard -> {
-
+                    supportActionBar?.title = "Manage Events"
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragmentContainer, DashboardFragment())
                         .commit()
@@ -92,12 +97,16 @@ class AdminDashboardActivity : AppCompatActivity() {
                 }
 
                 R.id.nav_add_event -> {
-
+                    supportActionBar?.title = "Add Event"
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragmentContainer, AddEventFragment())
                         .addToBackStack(null)
                         .commit()
 
+                }
+
+                R.id.nav_theme -> {
+                    toggleDarkMode()
                 }
 
                 R.id.nav_logout -> {
@@ -131,6 +140,16 @@ class AdminDashboardActivity : AppCompatActivity() {
         }
     }
 
-
-
+    private fun toggleDarkMode() {
+        val sharedPrefs = getSharedPreferences("CollegeEventPrefs", Context.MODE_PRIVATE)
+        val isDarkMode = sharedPrefs.getBoolean("isDarkMode", false)
+        
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            sharedPrefs.edit().putBoolean("isDarkMode", false).apply()
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            sharedPrefs.edit().putBoolean("isDarkMode", true).apply()
+        }
+    }
 }
